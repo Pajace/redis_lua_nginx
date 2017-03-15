@@ -16,7 +16,7 @@ Fill your AWS info in docker-lua-redis-nginx/build.sh and docker-lua-redis-nginx
 
 It will create two docker image **lua_redis_nginx/static-web** and **lua_redis_nginx/static-web-config** with versino.
 
-Open **docker-lua-redis-nginx-deply/env_static** and fill your info, then run `./static up` or `./static down` to up or down it.
+Open **docker-lua-redis-nginx-deply/env_static** and fill your info and your docker image version then run `./static up` or `./static down` to up or down it.
 
 # How to config it
 
