@@ -1,0 +1,14 @@
+static-web:
+  image: ${IMAGE_STATIC_WEB}
+  ports:
+    - "80:80"
+  volumes_from:
+    - static-web-config
+  environment:
+    - NGINX_RESOLVER=${NGINX_RESOLVER}
+    - NGINX_S3_URL=${NGINX_S3_URL}
+    - REDIS_PORT_6379_TCP_ADDR=${REDIS_PORT_6379_TCP_ADDR}
+    - REDIS_PORT_6379_TCP_PORT=${REDIS_PORT_6379_TCP_PORT}
+
+static-web-config:
+  image: ${IMAGE_STATIC_WEB_CONFIG}

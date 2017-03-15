@@ -1,0 +1,63 @@
+# proxy cache
+proxy_cache_path /tmp/s3/cache levels=1:2 keys_zone=my_cache:10m max_size=500m inactive=60m;
+
+proxy_cache my_cache;
+proxy_cache_valid 200 1d;
+
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server ipv6only=on;
+
+	# dns resolver
+	resolver {{ default .Env.NGINX_RESOLVER "8.8.8.8" }};
+
+	# s3 bucket url
+	set $s3_url {{ default .Env.NGINX_S3_URL "<YOUR_S3_BUCKET_NAME>.s3.amazonaws.com" }};
+
+	# add header to check cache status
+	add_header X-Cache-Status $upstream_cache_status;
+
+	# generic case
+	location / {
+		proxy_pass http://$s3_url;
+	}
+
+	# health check
+	location /status {
+		return 200;
+		expires 1s;
+		add_header Content-Type text/html;
+	}
+
+    # web_page form content maker
+    location ^~ /web_page/ {
+        content_by_lua '
+            ngx.header.content_type = "html";
+
+            local redis = require "resty.redis"
+            local red = redis:new()
+
+            redis:set_timeout(3000)
+            local ok, err = red:connect(os.getenv("REDIS_PORT_6379_TCP_ADDR"), tonumber(os.getenv("REDIS_PORT_6379_TCP_PORT")))
+            if not ok then
+                ngx.log(ngx.ERR, "failed to connect redis: ", err)
+                return ngx.exit(500)
+            end
+
+            local key = ngx.var.uri
+            local content, err = red:get(key)
+            if not content then
+                ngx.log(ngx.ERR, "failed to get redis key: ", err)
+                return ngx.exit(404)
+            end
+
+            if content == ngx.null then
+                ngx.log(ngx.ERR, "no content found for key ", key)
+                return ngx.exit(404)
+            end
+
+            ngx.say(content)
+        ';
+    }
+
+}

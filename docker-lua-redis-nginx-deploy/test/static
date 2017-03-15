@@ -1,0 +1,15 @@
+#!/bin/bash
+
+. env_static
+
+case ${1} in
+"up")
+	$(aws ecr get-login)
+	docker-compose up -d
+	;;
+"down")
+	docker-compose down
+	;;
+*)
+	;;
+esac

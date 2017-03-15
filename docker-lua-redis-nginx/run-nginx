@@ -1,0 +1,1 @@
+./dockerize -template /etc/nginx/conf.d/nginx_server.conf.tmpl:/etc/nginx/conf.d/nginx_server.conf nginx -g "daemon off;"
